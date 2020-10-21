@@ -1,0 +1,526 @@
+---
+title: "Rape In India"
+author: "Mohammed Abraar Asif"
+date: "10/21/2020"
+output: html_document
+---
+
+## Introduction
+
+India is a country where hundreds and thousands of crime occurs everyday. In India, it is highly debated that majority of the time the person accused for a crime is not convicted and is liberated due to some reason. This might be due to bribery, political influence, etc. The website <https://www.kaggle.com/rajanand/crime-in-india>('Kaggle') provides us with a number of datasets for crime in India. My goal is to work on the cases of rape and to determine the percentage of cases convicted and the percentage of cases that are not convicted and let free because of political influence, bribery and other reasons. I have chosen the dataset "Victims_of_rape" and "Cases_under_crime_against_women" from the group of datasets. The dataset is available in .csv format. I have also used a dataset from <https://data.world/bhavnachawla/crime-rate-against-children-india-2001-2012>('data.world') in which data for the crimes against children are available.
+
+## Importing packages
+
+The following packages are imported into the r-studio which is helpful is cleaning the dataset or performing pre-processing so that the effective information can be extracted from the data.  
+readr → Reading the dataset  
+dplyr → Data manipulation tools  
+ggplot2 → Data visualization tools  
+deductive → Data correction and imputation  
+Validate → Conditions to test  
+forecast → Functions for Box Cox transformation  
+tidyverse → Special Data preprocessing package 
+car → Package containing qqplot function
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(deductive)
+library(validate)
+library(forecast)
+library(tidyverse)
+library(car)
+```
+
+## Executive Summary
+  
+1. First the datasets are read into the r platform using functions from the readr package.  
+2. After the datasets are read the variables are explained and the structure of individual datasets are determined.  
+3. Since none of our datasets have factor variable, a factor variable is defined for categorizing the data. 4. Understanding the data involves proper data type conversions and renaming of column names for easy understanding.  
+5. Tidy and manipulate 1 involves the tiding of utidy dataset using gather and spread functions.  
+6. Tidy and manipulate 2 involves joining or merging datasets and using mutate function to define variables that are useful for inference.  
+7. Scan 1 of the data preprocessing involves the check for missing and special values. If there are any missing values appropriate missing values handlig techniques are applied. If the dataset has a consistent rule such a variable A is the sum of Variable B and C. Such rules can be defined using imput_lr() function. 8. Scan 2 of the data preprocessing involves the check for outliers. There are several techniques for handling the outliers and the most effective one is chosen to avoid them.
+9. The variables in the dataset are not always normal. Thus, normality check is done on the data variable and if not normal transformations are applied on the variable. The transformed data variable will be normal and is better inferred.  
+10. Finally the resulting preprocessed data is inferred followed by conclusion.  
+
+
+## Reading the dataset
+
+The working directory is initially set using setwd() and dataset is read using the read_csv() of the readr package. 
+```{r}
+setwd("C:/Users/Lenovo/Documents/RMIT/Courses/Data Wrangling/Assignments/Assignment 2/Rape in India")
+getwd()
+df1 <- read_csv("Victims_of_rape.csv")
+df2 <- read_csv("Cases_under_crime_against_women.csv")
+df3 <- read_csv("Crime head-wise persons arrested under crime against children during 2001-2012.csv")
+```
+
+## Details of the variables
+
+Details of the variables in dataset 1-  
+1. Area_Name → Name of the state/territory  
+2. Year → Year in which the crime took place  
+3. Subgroup → Victims of incest rape, victims of other rape and total rape  
+4. Rape_Cases_Reported → The total number of cases reported  
+5. Victims_Above_50_Yrs → Victims above the age of 50  
+6. Victims_Between_10-14_Yrs → Victims between the age 10-14  
+7. Victims_Between_14-18_Yrs → Victims between the age 14-18  
+8. Victims_Between_18-30_Yrs → Victims between the age 18-30  
+9. Victims_Between_30-50_Yrs → Victims between the age 30-50  
+10. Victims_of_Rape_Total → Overall Victims of rape  
+11. Victims_Upto_10_Yrs → Victims upto the age of 10  
+
+Details of the variables in dataset 2-  
+1. Area_Name → Name of the State/Territory  
+2. Year → Year in which the crime took place  
+3. Group_Name → Category of crime  
+4. Sub_Group_Name → Subcategory of crime  
+5. Cases_Acquitted_or_Discharged  
+6. Cases_charge_sheets_were_not_laid_but_Final_Report_submitted → Charge sheets were not filed but final reports were submitted    
+7. Cases_Chargesheeted → Cases filed  
+8. Cases_Compounded_or_Withdrawn → Cases withdrawn after chargesheeted   
+9. Cases_Convicted → Cases that are convicted after reporting  
+10.Cases_Declared_False_on_Account_of_Mistake_of_Fact_or_of_Law → Cases that were mistaken   
+11.Cases_Investigated_Chargesheets+FR_Submitted → Investigated cases  
+12.Cases_not_Investigated_or_in_which_investigation_was_refused → Not investigated and refused cases    
+13.Cases_Pending_Investigation_at_Year_End → Pending cases at year end   
+14.Cases_Pending_Investigation_from_previous_year → Pending cases from previous year  
+15.Cases_Pending_Trial_at_Year_End → Year end pending trial   
+16.Cases_Pending_Trial_from_the_previous_year → Pending trial from previous year  
+17.Cases_Reported → Reported cases  
+18.Cases_Sent_for_Trial → Trial cases  
+19.Cases_Trials_Completed → Trials completed   
+20.Cases_Withdrawn_by_the_Govt → Government withdrawn cases    
+21.Cases_withdrawn_by_the_Govt_during_investigation → Case withdrawn by the government during investigating of a particular case.   
+22.Total_Cases_for_Trial → Total trial cases
+
+Details of the variables in dataset 3-  
+1. `STATE/UT` → Name of the State or Union territory    
+2. `CRIME HEAD` → Type of crime    
+3. `2001` → Year of crime  
+4. `2002` → Year of crime   
+5. `2003` → Year of crime   
+6. `2004` → Year of crime  
+7. `2005` → Year of crime  
+8. `2006` → Year of crime  
+9. `2007` → Year of crime  
+10.`2008` → Year of crime  
+11.`2009` → Year of crime  
+12.`2010` → Year of crime  
+13.`2011` → Year of crime  
+14.`2012` → Year of crime  
+
+## Structure of the datasets
+
+The function str(x) is used to determine the structure of the data.  
+
+```{r}
+str(df1)
+str(df2)
+str(df3)
+```
+
+The structure of both the datasets are determined and it is clear that the df1 (dataset 1) has character and numeric datatypes and the df2 (dataset 2) also has character and numeric datatypes. The year columns of dataset 3 has double as its datatype and needs to be converted into integer type. A variable with Factor datatype is defined for proper categorization of states with low, medium and high number of cases based on the Total cases. 
+
+Defining factor variable:  
+```{r}
+hist(df1$Rape_Cases_Reported)
+df1$`Risk` <- ifelse(df1$Rape_Cases_Reported>10, ifelse(df1$Rape_Cases_Reported>100, "High", "Medium"), "Low")
+str(df1$`Risk`)
+levels(df1$Risk)
+df1$Risk <- factor(df1$Risk, levels = c("Low", "Medium", "High"), labels = c("Low Risk", "Medium Risk", "High Risk"), ordered = TRUE)
+str(df1$Risk)
+df1
+```
+
+## Preprocessing dataset
+
+Both the datasets are untidy due to the following factors-  
+* Improper datatypes  
+* The dataset 3 is untidy and needs to get tidied  
+* Missing values  
+* Needs transformation    
+
+Thus, data preprocessing is essential in transforming this untidy data into valuable insights.
+
+## Understanding data
+
+By looking at the structure of both the datasets it is seen that the datatypes of the cases or victims and year are in double where it should have been an integer. This is because the number or cases and year cannot take up decimal values and can have only integer data types. In dataset 3 the year variables have are in double where it should have been an integer. The following syntax is used for type conversion.  
+
+Syntax : as.integer(x)  
+
+
+```{r}
+df1$Year <- as.integer(df1$Year)
+df1$Rape_Cases_Reported <- as.integer(df1$Rape_Cases_Reported)
+df1$Victims_Above_50_Yrs <- as.integer(df1$Victims_Above_50_Yrs)
+df1$`Victims_Between_10-14_Yrs` <- as.integer(df1$`Victims_Between_10-14_Yrs`)
+df1$`Victims_Between_14-18_Yrs` <- as.integer(df1$`Victims_Between_14-18_Yrs`)
+df1$`Victims_Between_18-30_Yrs` <- as.integer(df1$`Victims_Between_18-30_Yrs`)
+df1$`Victims_Between_30-50_Yrs` <- as.integer(df1$`Victims_Between_30-50_Yrs`)
+df1$Victims_of_Rape_Total <- as.integer(df1$Victims_of_Rape_Total)
+df1$Victims_Upto_10_Yrs <- as.integer(df1$Victims_Upto_10_Yrs)
+
+df2$Year <- as.integer(df2$Year)
+df2$Cases_Acquitted_or_Discharged <- as.integer(df2$Cases_Acquitted_or_Discharged)
+df2$Cases_charge_sheets_were_not_laid_but_Final_Report_submitted <- as.integer(df2$Cases_charge_sheets_were_not_laid_but_Final_Report_submitted)
+df2$Cases_Chargesheeted <- as.integer(df2$Cases_Chargesheeted)
+df2$Cases_Compounded_or_Withdrawn <- as.integer(df2$Cases_Compounded_or_Withdrawn)
+df2$Cases_Convicted <- as.integer(df2$Cases_Convicted)
+df2$Cases_Declared_False_on_Account_of_Mistake_of_Fact_or_of_Law <- as.integer(df2$Cases_Declared_False_on_Account_of_Mistake_of_Fact_or_of_Law)
+df2$`Cases_Investigated_Chargesheets+FR_Submitted` <- as.integer(df2$`Cases_Investigated_Chargesheets+FR_Submitted`)
+df2$Cases_not_Investigated_or_in_which_investigation_was_refused <- as.integer(df2$Cases_not_Investigated_or_in_which_investigation_was_refused)
+df2$Cases_Pending_Investigation_at_Year_End <- as.integer(df2$Cases_Pending_Investigation_at_Year_End)
+df2$Cases_Pending_Investigation_from_previous_year <- as.integer(df2$Cases_Pending_Investigation_from_previous_year)
+df2$Cases_Pending_Trial_at_Year_End <- as.integer(df2$Cases_Pending_Trial_at_Year_End)
+df2$Cases_Pending_Trial_from_the_previous_year <- as.integer(df2$Cases_Pending_Trial_from_the_previous_year)
+df2$Cases_Reported <- as.integer(df2$Cases_Reported)
+df2$Cases_Sent_for_Trial <- as.integer(df2$Cases_Sent_for_Trial)
+df2$Cases_Trials_Completed <- as.integer(df2$Cases_Trials_Completed)
+df2$Cases_Withdrawn_by_the_Govt <- as.integer(df2$Cases_Withdrawn_by_the_Govt)
+df2$Cases_withdrawn_by_the_Govt_during_investigation <- as.integer(df2$Cases_withdrawn_by_the_Govt_during_investigation)
+df2$Total_Cases_for_Trial <- as.integer(df2$Total_Cases_for_Trial)
+
+df3$`2001` <- as.integer(df3$`2001`)
+df3$`2002` <- as.integer(df3$`2002`)
+df3$`2003` <- as.integer(df3$`2003`)
+df3$`2004` <- as.integer(df3$`2004`)
+df3$`2005` <- as.integer(df3$`2005`)
+df3$`2006` <- as.integer(df3$`2006`)
+df3$`2007` <- as.integer(df3$`2007`)
+df3$`2008` <- as.integer(df3$`2008`)
+df3$`2009` <- as.integer(df3$`2009`)
+df3$`2010` <- as.integer(df3$`2010`)
+df3$`2011` <- as.integer(df3$`2011`)
+df3$`2012` <- as.integer(df3$`2012`)
+
+```
+
+## Tidy and manipulate 1
+
+According to the tidy data principle:  
+1. Each variable must have its own column.  
+2. Each observation must have its own row.  
+3. Each value must have its own cell.  
+
+In dataset 3 individual years are given as the variables and this violates principle 2 of the tidy data principle. Individual years are observations and not variables. Thus, tidyr functions are used to tidy data.
+
+My focus is totally towards the total victims of rape and not victims of incest rape and other. So, I am going to remove the rows which has subgroup of "Victims of Incest Rape" and "Victims of Other Rape". The index of the subgroup "Victims of Incest Rape" and "Victims of Other Rape" is determined using which() function. Then the dataset df1 is subsetted eliminating the rows containing "Victims of Incest Rape" and "Victims of Other Rape" data. 
+
+```{r}
+r1 <- which(df1$Subgroup=="Victims of Incest Rape")
+r2 <- which(df1$Subgroup=="Victims of Other Rape")
+df1 <- df1[-c(r1,r2),]
+```
+
+The column names of df1 are not pleasing when viewed. So by renaming the columns, a person who is observing the dataset will have a good understanding about the variables.
+
+```{r}
+names(df1)[names(df1) == "Area_Name" ] <- "Area"
+names(df1)[names(df1) == "Rape_Cases_Reported" ] <- "Total Reported Cases"
+names(df1)[names(df1) == "Victims_Above_50_Yrs" ] <- ">50yrs"
+names(df1)[names(df1) == "Victims_Between_10-14_Yrs" ] <- "(10-14)yrs"
+names(df1)[names(df1) == "Victims_Between_14-18_Yrs" ] <- "(14-18)yrs"
+names(df1)[names(df1) == "Victims_Between_18-30_Yrs" ] <- "(18-30)yrs"
+names(df1)[names(df1) == "Victims_Between_30-50_Yrs" ] <- "(30-50)yrs"
+names(df1)[names(df1) == "Victims_Upto_10_Yrs" ] <- "<10yrs"
+```
+
+The following variables are selected in the df1 dataset-
+`Area`  
+`Year`  
+`<10yrs`  
+`(10-14)yrs`  
+`(14-18)yrs`  
+`(18-30)yrs`  
+`(30-50)yrs`  
+`>50yrs`  
+`Total Reported Cases`  
+
+```{r}
+df1 <- df1%>%
+  select("Area", "Year", "<10yrs", "(10-14)yrs", "(14-18)yrs", "(18-30)yrs", "(30-50)yrs", ">50yrs", "Total Reported Cases", "Risk")
+```
+
+The column names of the df2 dataset are renamed for better understanding of the data. Only the following variables are selected from df2-  
+`Area`
+`Year`
+`Cases Convicted`
+`Fraud`
+
+```{r}
+names(df2)[names(df2) == "Area_Name"] <- "Area"
+names(df2)[names(df2) == "Cases_Convicted"] <- "Cases Convicted"
+```
+
+
+The dataset 3 is untidy and needs to be tidied using the gather and spread function. Our focus is only on the rape cases, so only `RAPE OF CHILDREN` variable is selected along with `STATE/UT` and Year.  
+
+```{r}
+df3 <- df3 %>%
+  gather(`2001`, `2002`,`2003`, `2004`, `2005`, `2006`, `2007`, `2008`, `2009`, `2010`, `2011`, `2012`, key = "Year", value = "Cases")
+df3 <- df3%>%
+  spread(key = "CRIME HEAD", value = Cases)
+df3 <- df3%>%
+  select(`STATE/UT`, Year, `RAPE OF CHILDREN`)
+```
+
+Renaming dataset 3
+
+The name of the areas in dataset 3 is different from the area names in dataset 1 and 2. Thus, to obtain a common variable the area names in dataset 3 is changed.  
+
+```{r}
+names(df3)[names(df3) == "STATE/UT"] <- "Area"
+names(df3)[names(df3) == "RAPE OF CHILDREN"] <- "Rape of Children"
+df3$Area[df3$Area=="A & N ISLANDS"] <- "Andaman & Nicobar Islands" 
+df3$Area[df3$Area=="ANDHRA PRADESH"] <- "Andhra Pradesh"
+df3$Area[df3$Area=="ARUNACHAL PRADESH"] <- "Arunachal Pradesh"
+df3$Area[df3$Area=="ASSAM"] <- "Assam"
+df3$Area[df3$Area=="BIHAR"] <- "Bihar"
+df3$Area[df3$Area=="CHANDIGARH"] <- "Chandigarh" 
+df3$Area[df3$Area=="CHHATTISGARH"] <- "Chhattisgarh"
+df3$Area[df3$Area=="D & N HAVELI"] <- "Dadra & Nagar Haveli"
+df3$Area[df3$Area=="DAMAN & DIU"] <- "Daman & Diu"
+df3$Area[df3$Area=="DELHI"] <- "Delhi"
+df3$Area[df3$Area=="GOA"] <- "Goa"
+df3$Area[df3$Area=="GUJARAT"] <- "Gujarat" 
+df3$Area[df3$Area=="HARYANA"] <- "Haryana"
+df3$Area[df3$Area=="HIMACHAL PRADESH"] <- "Himachal Pradesh"
+df3$Area[df3$Area=="JAMMU & KASHMIR"] <- "Jammu & Kashmir"
+df3$Area[df3$Area=="JHARKHAND"] <- "Jharkhand" 
+df3$Area[df3$Area=="KARNATAKA"] <- "Karnataka"
+df3$Area[df3$Area=="KERALA"] <- "Kerala"
+df3$Area[df3$Area=="LAKSHADWEEP"] <- "Lakshadweep"
+df3$Area[df3$Area=="MADHYA PRADESH"] <- "Madhya Pradesh"
+df3$Area[df3$Area=="MAHARASHTRA"] <- "Maharashtra"
+df3$Area[df3$Area=="MANIPUR"] <- "Manipur"
+df3$Area[df3$Area=="MEGHALAYA"] <- "Meghalaya"
+df3$Area[df3$Area=="NAGALAND"] <- "Nagaland"
+df3$Area[df3$Area=="MIZORAM"] <- "Mizoram"
+df3$Area[df3$Area=="ODISHA"] <- "Odisha"
+df3$Area[df3$Area=="PUDUCHERRY"] <- "Puducherry"
+df3$Area[df3$Area=="PUNJAB"] <- "Punjab"
+df3$Area[df3$Area=="RAJASTHAN"] <- "Rajasthan"
+df3$Area[df3$Area=="SIKKIM"] <- "Sikkim"
+df3$Area[df3$Area=="TAMIL NADU"] <- "Tamil Nadu"
+df3$Area[df3$Area=="TRIPURA"] <- "Tripura"
+df3$Area[df3$Area=="UTTAR PRADESH"] <- "Uttar Pradesh" 
+df3$Area[df3$Area=="UTTARAKHAND"] <- "UTTARAKHAND"
+df3$Area[df3$Area=="WEST BENGAL"] <- "WEST BENGAL"
+
+df3$Year <- as.integer(df3$Year)
+```
+
+## Tidy and manipulate 2
+
+In the df2 dataset only the cases of Rape are filtered out from the Group_Name variable and new variable "Fraud" is created by using the mutate function and adding Cases_Acquitted_or_Discharged, Cases_charge_sheets_were_not_laid_but_Final_Report_submitted, Cases_Compounded_or_Withdrawn)  
+
+filter() function is used to filter out the rape data and mutate() function is used to define variable fraud which is used to determine the number of cases that are were not convicted due to some reason.  
+
+```{r}
+df2 <- df2%>%
+  filter(`Group_Name`=="Rape")%>%
+  mutate(Fraud = Cases_Acquitted_or_Discharged + Cases_charge_sheets_were_not_laid_but_Final_Report_submitted + Cases_Compounded_or_Withdrawn)
+```
+
+
+All the three datasets df1, df2 and df3 are now ready for joining. A left_join() is used for joining df1, df2 and df3 and they are joined by "Area" and "Year". The resulting dataset is stored in the form of df. 
+
+```{r}
+df <- left_join(left_join(df1, df2, by=c("Area", "Year")), df3, by=c("Area", "Year"))
+```
+
+
+Another factor variable Fraudulence is introduced for categorizing the fraud data.  
+Fraudulence → The level of Fraudulence due to the number of fraud cases.  
+
+```{r}
+hist(df$Fraud)
+df$Fraudulence <- ifelse(df$Fraud>1000, ifelse(df$Fraud>8000, "High", "Medium"), "Low")
+str(df$Fraudulence)
+levels(df$Fraudulence)
+df$Fraudulence <- factor(df$Fraudulence, levels = c("Low", "Medium", "High"), labels = c("Low Fraud", "Medium Fraud", "High Fraud"), ordered = TRUE)
+str(df$Fraudulence)
+
+table(df$Risk, df$Fraudulence)
+
+```
+By cross tabulating Risk and Fraudulence it is observed that the areas that are at high risk are not always fraudulent.
+
+## Scan 1
+
+The joined dataset df is checked for missing values. The syntax is.na(df) can be used to determine the observations with missing values. Note that zero is not equal to NA. The number of cases can definetely be zero and there will be a very big impact on the analysis if we remove these zeros or replace them by some other value. Thus, the zeros in the dataset should not be removed or changed.  
+  
+Number of Missing Values:
+sum(is.na(x)) gives the total number of missing values in the dataframe x.  
+  
+```{r}
+sum(is.na(df))
+```
+
+The Special cases such as Inf, -Inf, nan etc are identified using is.infinite(), is.finite() and is.nan() functions. Note that the dataset cannot be entered as an argument in these functions and has to be applied through Apply function. Here Sapply is used to apply special functions to the df dataset.  
+
+Number of Special Values: 
+is.infinite() and is.nan() are used to determine the number of special values.  
+```{r}
+sum(sapply(df, is.infinite))
+sum(sapply(df, is.nan))
+```
+It is seen that there are no missing and special values in our dataset. However we can define a rule that has to consistent throughout the dataset. This is defined using validator() function of the validate package and impute_lr() function of the deductive package.  
+We know that the sum of the cases of `<10yrs`, `(10-14)yrs`, `(14-18)yrs`, `(18-30)yrs`, `(30-50)yrs` and `>50yrs` is equal to `Total Reported Cases`. Thus, by using the validator() function from the validate package and impute_lr() function from the deductive package we can define a rule that has to be consistent within the dataset. After imputing the data types will becomes double and are no longer integers.
+
+```{r}
+Rules <- validator( `<10yrs` + `(10-14)yrs` + `(14-18)yrs` + `(18-30)yrs` + `(30-50)yrs` + `>50yrs`  == `Total Reported Cases`,
+                    `<10yrs` >=0,
+                    `(10-14)yrs` >= 0,
+                    `(14-18)yrs` >= 0,
+                    `(18-30)yrs` >=0,
+                    `(30-50)yrs` >=0,
+                    `>50yrs` >=0
+)
+
+df <- impute_lr(df,Rules)
+```
+
+The cases are grouped by Area and summarised with each variable taken as the sum of its observations from 2001 to 2010. After grouping and summarising the dataset new variables `% of convicted cases`, `% of fraud` and `% of children` are defined using the mutate function. The data is then arranged in decending order of the % of convicted cases.  
+group_by() → used to group the data by `Area`  
+summarise() → used to summarise the data  
+mutate() → used to define variable  
+arrange() → used to arrange variable in ascending order  
+arrange(desc()) → used to arrange variable in descending order  
+
+```{r}
+df <- df%>%
+  group_by(Area)%>%
+  summarise(`<10yrs` = sum(`<10yrs`, na.rm = TRUE),
+            `(10-14)yrs` = sum(`(10-14)yrs`, na.rm = TRUE),
+            `(14-18)yrs` = sum(`(14-18)yrs`, na.rm = TRUE),
+            `(18-30)yrs` = sum(`(18-30)yrs`, na.rm = TRUE),
+            `(30-50)yrs` = sum(`(30-50)yrs`, na.rm = TRUE),
+            `>50yrs`= sum(`>50yrs`, na.rm=TRUE),
+            `Total Reported Cases` = sum(`Total Reported Cases`, na.rm = TRUE),
+            `Cases Convicted` = sum(`Cases Convicted`, na.rm = TRUE),
+            `Fraud` = sum(`Fraud`,na.rm = TRUE),
+            `Rape of Children` = sum(`Rape of Children`, na.rm = TRUE))
+df <- df%>%
+  mutate(`% of convicted cases` = (`Cases Convicted`/`Total Reported Cases`)*100,
+         `% of fraud` = (`Fraud`/`Total Reported Cases`)*100,
+         `% of children` = (`Rape of Children`/`Total Reported Cases`)*100)%>%
+  arrange(desc(`% of convicted cases`))
+```
+
+
+
+## Scan 2
+
+The data is then scanned for outliers. There are several ways of handling outliers such as Excluding or deleting outliers, imputing, capping and transforming. Here I am using caping for handling outliers. In capping if there are outliers in a given vector they are replaced by the 1st and the 4th quantile value of the data in the vector. A function cap(x) that accepts a vector x is defined and it determines the 0.05, 0.25, 0.75 and 0.95 quantiles of the vector and then replaces the outliers with first and fourth quantiles of the data in the vector. The resulting variable is of double data type.   
+
+```{r}
+cap <- function(x){
+  quantiles <- quantile( x, c(.05, 0.25, 0.75, .95 ) )
+  x[ x < quantiles[2] - 1.5*IQR(x) ] <- quantiles[1]
+  x[ x > quantiles[3] + 1.5*IQR(x) ] <- quantiles[4]
+  x
+}
+
+df$`(10-14)yrs` <- df$`(10-14)yrs`%>% cap()
+df$`(14-18)yrs` <- df$`(10-14)yrs`%>% cap()
+df$`(18-30)yrs` <- df$`(18-30)yrs`%>% cap()
+df$`(30-50)yrs` <- df$`(30-50)yrs`%>% cap()
+df$`<10yrs` <- df$`<10yrs`%>% cap()
+df$`>50yrs` <- df$`>50yrs`%>% cap()
+df$`Cases Convicted` <- df$`Cases Convicted`%>% cap()
+```
+
+
+It is observed that by joining the two dataset the sum of the number of fraud and convicted cases may exceed the total cases reported. Thus, another rule Fraud = Total Reported Cases - Cases Convicted is defined for consistent data.
+
+```{r}
+a <- which((df$Fraud+df$`Cases Convicted`)>=df$`Total Reported Cases`)
+df$Fraud[a] <- df$`Total Reported Cases`[a] - df$`Cases Convicted`[a]
+
+df
+```
+
+  
+  
+# Transformation
+
+The normality of a variable can be tested using qqpot and shapiro test. The histogram of the  variable `Total Reported Cases` is plotted and is checked for normality using qqplot and shapiro test. 
+
+STEPS:  
+
+1. hist(x) is used to determine the histogram of vector x.  
+2. qqplot(x) is a function in the car package that is used to determine the qqplot of vector x and if all the values in the qqplot are in the range then the variable is said to be normally distributed.  
+3. shapiro.test(x) is used to determine the p-value of the variable x. If the p-value is less than the alpha value(0.05) then the variable is not normally distributed.  
+
+```{r}
+hist(df$`Total Reported Cases`)
+qqPlot(df$`Total Reported Cases`,main = "Q-Q Plot for Normality"
+       ,xlab = "Normal Quantiles"
+       ,ylab = "% of Fraud")
+p <- shapiro.test(df$`Total Reported Cases`)$p.value
+normality_test <- p < 0.05
+normality_test
+```
+
+According to the normality tests, there are values outside the range in the qqplot and also the p-value of the variable is less than 0.05. Therefore, the variable `Total Reported Cases` is not normally distributed. Transformations are applied on this variable to make it normally distributed. There are several different types of transformations and the most suitable one is chosen.  
+After applying several transformations on the variable, the cuberoot transformation has the most significant affect on the variable making it normal.  
+  
+Syntax: transform_x <- (x)^(1/3)  
+  
+The qqplot is taken for the transformed vector and all the values are withing the range and also the p-value of the transformed vector is greater than alpha (0.05) making the variable normally distributed.  
+
+```{r}
+
+transform_df <- (df$`Total Reported Cases`)^(1/3)
+hist(transform_df)
+qqPlot(transform_df,main = "Q-Q Plot for Normality"
+       ,xlab = "Normal Quantiles"
+       ,ylab = "% of Fraud")
+p <- shapiro.test(transform_df)$p.value
+normality_test <- p < 0.05
+
+if (normality_test== FALSE) {
+print('Normally Distributed')
+} else {
+print('Not normally Distributed')
+}
+
+df$`Total Reported Cases` <- transform_df
+```
+
+## Inference
+
+ggplot2 package provides us with functions for column charts which can be used for easy inference.  
+
+```{r}
+head(df)
+
+ggplot(df, aes(x=Area, y=`% of convicted cases`))+
+  geom_col()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  labs(title='Area vs % of convicted cases', x='Area', y='% of convicted cases')
+  
+
+ggplot(df, aes(x=Area, y=`% of fraud`))+
+  geom_col()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  labs(title='Area vs % of convicted cases', x='Area', y='% of fraud')
+
+ggplot(df, aes(x=Area, y=`% of children`))+
+  geom_col()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  labs(title='Area vs % of convicted cases', x='Area', y='% of children')
+```
+
+From the graphs the following inferrence are made-  
+1. The % of convicted cases is maximum in Nagaland and minimum in Manipur.  
+2. The % of fraud cases is maximum in Daman & Diu and minimum in Mizoram.  
+3. The % of children getting raped is maximum in Andaman and Nicobar Islands and minimum in Assam.  
+
+
+## References
+
+[1]   https://www.kaggle.com/rajanand/crime-in-india (Kaggle)  
+[2]   https://data.world/bhavnachawla/crime-rate-against-children-india-2001-2012 (Data.World)  
+[3]   https://en.wikipedia.org/wiki/Normality_test (Test for Normality) 
